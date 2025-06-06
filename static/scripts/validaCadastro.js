@@ -8,18 +8,22 @@ const confirmarSenha = document.getElementById("confirmarSenha");
 const celular = document.getElementById("celular");
 const cpf = document.getElementById("cpf");
 const rg = document.getElementById("rg");
-const msgError = document.getElementsByClassName("msgError");
+const msgErrorElements = document.getElementsByClassName("msgError");
 
 /* ------ FUNÇÃO PARA RENDERIZAR AS DIFERENTES MENSAGENS DE ERRO! ------ */
 const createDisplayMsgError = (mensagem) => {
-  msgError[0].textContent = mensagem;
+  if (msgErrorElements.length > 0) {
+    // Boa prática para verificar se o elemento
+    msgErrorElements[0].textContent = mensagem;
+    msgErrorElements[0].style.display = mensagem ? "block" : "none"; // Mostrar/ocultar
+  }
 };
 /* --------------------------------------------------------------------- */
 
 /* ---------------- FUNÇÃO PARA VERIFICAR O NOME ----------------------- */
 const checkNome = () => {
-  const nomeRegex = /^[A-Za-zÀ-ÿ\s]+$/;
-  return nomeRegex.test(nome.value);
+  const nomeRegex = /^[A-Za-zÀ-ÿ\s'-]+$/; // Permitindo apóstrofos e hífens
+  return nomeRegex.test(nome.value.trim()); // .trim() para remover espaços
 };
 /* --------------------------------------------------------------------- */
 
@@ -103,7 +107,7 @@ function checkPasswordStrength(senha) {
 /* ------------- FUNÇÃO PARA VERIFICAR E ENVIAR DADOS ------------------ */
 async function fetchDatas(event) {
   // Tornar a função async para usar await
-  event.preventDefault();
+  event.preventDefault(); // Ele trava até a função terminar
   createDisplayMsgError(""); // Limpa mensagem de erros anteriores
 
   if (!checkNome) {
@@ -111,7 +115,7 @@ async function fetchDatas(event) {
     createDisplayMsgError(
       "O nome não pode conter números ou caracteres especiais!"
     );
-    nome.focus();
+    nome.focus(); // Se aconteceu erro ele redireciona o foco para esse campo, forçando o usuário até acertar o campo aqui.
     return;
   }
 
@@ -185,7 +189,7 @@ async function fetchDatas(event) {
 
   try {
     const response = await fetch("/cadastro", {
-      method: "POST", // Método HTTP
+      method: 'POST', // Método HTTP
       headers: {
         "Content-Type": "application/json", // Indicando que estamo enviando o JSON
         // 'Accept': 'application/jason' // Opicional, indica que esperamos o JSON
@@ -198,12 +202,16 @@ async function fetchDatas(event) {
       const result = await response.json(); // Tenta parsear a resposta do servidor com JSON
       console.log("Sucesso: ", result);
       formulario.reset(); // Limpa o fromulário após sucesso
+
       // createDisplayMsgError('Cadastro realizado com sucesso! ' + (result.message || ""))
+
       alert("Cadastro realizado com sucesso!" + (result.message || ""));
       window.location.href = "/login";
+
       // Redirecionar ou mostrar mensagem de sucesso mais elaborada
     } else {
       // O servidor respondeu com erro (status 4xx ou 5xx)
+
       const errorData = await response.json().catch(() => ({
         message: "Erro ao processar a resposta do servidor.",
       })); // Tenta pegar a mensagem de erro do servidor
